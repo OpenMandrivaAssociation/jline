@@ -37,18 +37,18 @@
 %define with_maven %{!?_without_maven:1}%{?_without_maven:0}
 %define without_maven %{?_without_maven:1}%{!?_without_maven:0}
 
-%define cvs_version     0.9.9
+%define cvs_version     0.9.91
 %define repo_dir    .m2/repository
 
 Name:           jline
-Version:        0.9.9
-Release:        %mkrel 1.1.1
+Version:        0.9.9.1
+Release:        %mkrel 1.0.1
 Epoch:          0
 Summary:        Java library for reading and editing user input in console applications
 License:        BSD
 URL:            http://jline.sf.net/
 Group:          Development/Java
-Source0:        http://download.sourceforge.net/sourceforge/jline/jline-%{cvs_version}.zip
+Source0:        http://superb-east.dl.sourceforge.net/sourceforge/jline/jline-%{cvs_version}.zip
 Source1:        CatalogManager.properties
 Source2:        jline-build.xml
 Requires:       /bin/sh
@@ -122,13 +122,15 @@ cp -p %SOURCE1 %{_builddir}/%{name}-%{cvs_version}/build/
 
 cp -p %{SOURCE2} src/build.xml
 
+%{__perl} -pi -e 's/^import com\.sun\.jmx\.snmp\.ThreadContext\;$//' src/src/main/java/jline/Terminal.java
+
 %build
 mkdir -p native
 # Now done by Patch0 for documentation purposes
 #perl -p -i -e 's|^.*<attribute name="Class-Path".*||' build.xml
 
 # Use locally installed DTDs
-export CLASSPATH=%{_builddir}/%{name}-%{cvs_version}/build
+export CLASSPATH=$(pwd)/build:$(pwd)/src/target/test-classes
 
 cd src/
 
@@ -144,7 +146,7 @@ mvn-jpp \
 %else
 mkdir -p $(pwd)/.m2/repository
 build-jar-repository $(pwd)/.m2/repository junit
-export CLASSPATH=target/classes
+export CLASSPATH=$(pwd)/target/classes:$(pwd)/target/test-classes
 %{ant} -Dbuild.sysclasspath="only" -Duser.home=$(pwd) 
 %endif
 
@@ -194,7 +196,7 @@ rm -rf $RPM_BUILD_DIR/META-INF
 %if %{with_maven}
 %if %{gcj_support}
 %dir %attr(-,root,root) %{_libdir}/gcj/%{name}
-%attr(-,root,root) %{_libdir}/gcj/%{name}/jline-0.9.9.jar.*
+%attr(-,root,root) %{_libdir}/gcj/%{name}/jline-%{version}.jar.*
 %endif
 
 %files javadoc
@@ -206,5 +208,5 @@ rm -rf $RPM_BUILD_DIR/META-INF
 
 %if %{gcj_support}
 %dir %attr(-,root,root) %{_libdir}/gcj/%{name}
-%attr(-,root,root) %{_libdir}/gcj/%{name}/jline-0.9.9.jar.*
+%attr(-,root,root) %{_libdir}/gcj/%{name}/jline-%{version}.jar.*
 %endif

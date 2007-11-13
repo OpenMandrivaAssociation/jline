@@ -37,12 +37,12 @@
 %define with_maven %{!?_without_maven:1}%{?_without_maven:0}
 %define without_maven %{?_without_maven:1}%{!?_without_maven:0}
 
-%define cvs_version     0.9.91
+%define cvs_version 0.9.93
 %define repo_dir    .m2/repository
 
 Name:           jline
-Version:        0.9.9.1
-Release:        %mkrel 1.0.2
+Version:        0.9.93
+Release:        %mkrel 0.0.1
 Epoch:          0
 Summary:        Java library for reading and editing user input in console applications
 License:        BSD

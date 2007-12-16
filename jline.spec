@@ -42,7 +42,7 @@
 
 Name:           jline
 Version:        0.9.93
-Release:        %mkrel 0.0.1
+Release:        %mkrel 0.0.2
 Epoch:          0
 Summary:        Java library for reading and editing user input in console applications
 License:        BSD
@@ -53,7 +53,7 @@ Source1:        CatalogManager.properties
 Source2:        jline-build.xml
 Requires:       /bin/sh
 Requires:       /bin/stty
-BuildRequires:  jpackage-utils >= 0:1.7
+BuildRequires:  java-rpmbuild >= 0:1.7
 %if %{with_maven}
 BuildRequires:  xml-commons-resolver
 BuildRequires:  maven2

@@ -32,17 +32,17 @@
 
 %define gcj_support %{?_with_gcj_support:1}%{!?_with_gcj_support:%{?_without_gcj_support:0}%{!?_without_gcj_support:%{?_gcj_support:%{_gcj_support}}%{!?_gcj_support:0}}}
 
-%define _without_maven 1
+%define _without_maven 0
 
-%define with_maven %{!?_without_maven:1}%{?_without_maven:0}
+%define with_maven %{!?_without_maven:0}%{?_without_maven:1}
 %define without_maven %{?_without_maven:1}%{!?_without_maven:0}
 
 %define cvs_version 0.9.93
 %define repo_dir    .m2/repository
 
 Name:           jline
-Version:        0.9.93
-Release:        %mkrel 0.0.2
+Version:        0.9.94
+Release:        %mkrel 0.0.1
 Epoch:          0
 Summary:        Java library for reading and editing user input in console applications
 License:        BSD
@@ -58,6 +58,13 @@ BuildRequires:  java-rpmbuild >= 0:1.7
 BuildRequires:  xml-commons-resolver
 BuildRequires:  maven2
 BuildRequires:  maven2-plugin-resources
+BuildRequires:  maven2-plugin-compiler
+BuildRequires:  maven-surefire-plugin
+BuildRequires:  maven2-plugin-jar
+BuildRequires:  maven2-plugin-install
+BuildRequires:  maven2-plugin-site
+BuildRequires:  maven2-plugin-assembly
+BuildRequires:  maven2-plugin-javadoc
 BuildRequires:  ant-apache-resolver
 %else
 BuildRequires:  ant

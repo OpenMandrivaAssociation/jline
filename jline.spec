@@ -42,7 +42,7 @@
 
 Name:           jline
 Version:        0.9.94
-Release:        %mkrel 0.0.1
+Release:        %mkrel 0.0.2
 Epoch:          0
 Summary:        Java library for reading and editing user input in console applications
 License:        BSD

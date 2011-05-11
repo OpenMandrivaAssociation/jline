@@ -96,13 +96,7 @@ Javadoc for %{name}.
 
 cp %{SOURCE2} src/build.xml
 
-#%{__perl} -pi -e 's/^import com\.sun\.jmx\.snmp\.ThreadContext\;$//' src/src/main/java/jline/Terminal.java
-
 %build
-# Now done by Patch0 for documentation purposes
-#perl -p -i -e 's|^.*<attribute name="Class-Path".*||' build.xml
-
-# Use locally installed DTDs
 export CLASSPATH=$(pwd)/build:$(pwd)/src/target/test-classes
 
 cd src/
@@ -136,10 +130,10 @@ done
 # javadoc
 install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
 for target in $(find -type d -name target); do
-        install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}/`basename \`dirname $target\` | sed -e s:jline-::g`
-        cp -pr $target/site/apidocs/* $jar $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}/`basename \`dirname $target\` | sed -e s:jline-::g`
+        install -d -m 755 %{buildroot}%{_javadocdir}/%{name}-%{version}/`basename \`dirname $target\` | sed -e s:jline-::g`
+        cp -pr $target/site/apidocs/* $jar %{buildroot}%{_javadocdir}/%{name}-%{version}/`basename \`dirname $target\` | sed -e s:jline-::g`
 done
-ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name} 
+ln -s %{name}-%{version} %{buildroot}%{_javadocdir}/%{name} 
 %endif
 
 %if %{with gcj_support}

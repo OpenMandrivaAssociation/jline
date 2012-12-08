@@ -96,7 +96,13 @@ Javadoc for %{name}.
 
 cp %{SOURCE2} src/build.xml
 
+#%{__perl} -pi -e 's/^import com\.sun\.jmx\.snmp\.ThreadContext\;$//' src/src/main/java/jline/Terminal.java
+
 %build
+# Now done by Patch0 for documentation purposes
+#perl -p -i -e 's|^.*<attribute name="Class-Path".*||' build.xml
+
+# Use locally installed DTDs
 export CLASSPATH=$(pwd)/build:$(pwd)/src/target/test-classes
 
 cd src/
@@ -130,10 +136,10 @@ done
 # javadoc
 install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
 for target in $(find -type d -name target); do
-        install -d -m 755 %{buildroot}%{_javadocdir}/%{name}-%{version}/`basename \`dirname $target\` | sed -e s:jline-::g`
-        cp -pr $target/site/apidocs/* $jar %{buildroot}%{_javadocdir}/%{name}-%{version}/`basename \`dirname $target\` | sed -e s:jline-::g`
+        install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}/`basename \`dirname $target\` | sed -e s:jline-::g`
+        cp -pr $target/site/apidocs/* $jar $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}/`basename \`dirname $target\` | sed -e s:jline-::g`
 done
-ln -s %{name}-%{version} %{buildroot}%{_javadocdir}/%{name} 
+ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name} 
 %endif
 
 %if %{with gcj_support}
@@ -168,3 +174,71 @@ ln -s %{name}-%{version} %{buildroot}%{_javadocdir}/%{name}
 %dir %attr(-,root,root) %{_libdir}/gcj/%{name}
 %attr(-,root,root) %{_libdir}/gcj/%{name}/jline-%{version}.jar.*
 %endif
+
+
+%changelog
+* Wed May 11 2011 Per Øyvind Karlsen <peroyvind@mandriva.org> 1.0-1
++ Revision: 673389
+- update to 1.0 and do some heavy cleaning
+
+  + Thierry Vignaud <tv@mandriva.org>
+    - rebuild
+
+* Tue Feb 26 2008 Alexander Kurtakov <akurtakov@mandriva.org> 0:0.9.94-0.0.1mdv2008.1
++ Revision: 175316
+- new version and build with maven
+
+  + Olivier Blin <oblin@mandriva.com>
+    - restore BuildRoot
+
+  + Thierry Vignaud <tv@mandriva.org>
+    - kill re-definition of %%buildroot on Pixel's request
+
+* Sun Dec 16 2007 Anssi Hannula <anssi@mandriva.org> 0:0.9.93-0.0.2mdv2008.1
++ Revision: 120949
+- buildrequire java-rpmbuild, i.e. build with icedtea on x86(_64)
+
+* Wed Nov 14 2007 David Walluck <walluck@mandriva.org> 0:0.9.93-0.0.1mdv2008.1
++ Revision: 108566
+- 0.9.93 (upstream versioning, not jpackage)
+
+* Sat Sep 15 2007 Anssi Hannula <anssi@mandriva.org> 0:0.9.9.1-1.0.2mdv2008.0
++ Revision: 87438
+- rebuild to filter out autorequires of GCJ AOT objects
+- remove unnecessary Requires(post) on java-gcj-compat
+
+* Sat Aug 04 2007 David Walluck <walluck@mandriva.org> 0:0.9.9.1-1.0.1mdv2008.0
++ Revision: 58826
+- 0.9.9.1
+
+* Wed Jul 04 2007 David Walluck <walluck@mandriva.org> 0:0.9.9-1.1.1mdv2008.0
++ Revision: 47871
+- Import jline
+
+
+
+* Tue Mar 06 2007 Matt Wringe <mwringe@redhat.com> - 0:0.9.9-1jpp.1
+- Add option to build with ant.
+- Fix various rpmlint issues
+- Specify proper license
+
+* Thu May 04 2006 Alexander Kurtakov <akurtkov at gmail.com> - 0:0.9.9-1jpp
+- Upgrade to 0.9.9
+
+* Thu May 04 2006 Ralph Apel <r.apel at r-apel.de> - 0:0.9.5-1jpp
+- Upgrade to 0.9.5
+- First JPP-1.7 release
+
+* Mon Apr 25 2005 Fernando Nasser <fnasser@redhat.com> - 0:0.9.1-1jpp
+- Upgrade to 0.9.1
+- Disable attempt to include external jars
+
+* Mon Apr 25 2005 Fernando Nasser <fnasser@redhat.com> - 0:0.8.1-3jpp
+- Changes to use locally installed DTDs
+- Do not try and access sun site for linking javadoc
+
+* Sun Aug 23 2004 Randy Watler <rwatler at finali.com> - 0:0.8.1-2jpp
+- Rebuild with ant-1.6.2
+
+* Mon Jan 26 2004 David Walluck <david@anti-microsoft.org> 0:0.8.1-1jpp
+- release

@@ -31,40 +31,40 @@
 %bcond_with	gcj_support
 %bcond_with	maven
 
-Name:           jline
-Version:        1.0
-Release:        1
-Summary:        Java library for reading and editing user input in console applications
-License:        BSD
-URL:            http://jline.sf.net/
-Group:          Development/Java
-Source0:        http://superb-east.dl.sourceforge.net/sourceforge/jline/jline-%{version}.zip
-Source1:        CatalogManager.properties
-Source2:        jline-build.xml
-Requires:       /bin/sh
-Requires:       /bin/stty
-BuildRequires:  java-rpmbuild >= 0:1.7
+Summary:	Java library for reading and editing user input in console applications
+Name:		jline
+Version:	1.0
+Release:	1
+License:	BSD
+Url:		http://jline.sf.net/
+Group:		Development/Java
+Source0:	http://superb-east.dl.sourceforge.net/sourceforge/jline/jline-%{version}.zip
+Source1:	CatalogManager.properties
+Source2:	jline-build.xml
+%if !%{with gcj_support}
+BuildArch:	noarch
+%else
+BuildRequires:	java-gcj-compat-devel
+%endif
+BuildRequires:	java-rpmbuild >= 0:1.7
 %if %{with maven}
-BuildRequires:  xml-commons-resolver
-BuildRequires:  maven2
-BuildRequires:  maven2-plugin-resources
-BuildRequires:  maven2-plugin-compiler
-BuildRequires:  maven-surefire-plugin
-BuildRequires:  maven2-plugin-jar
-BuildRequires:  maven2-plugin-install
-BuildRequires:  maven2-plugin-site
-BuildRequires:  maven2-plugin-assembly
-BuildRequires:  maven2-plugin-javadoc
-BuildRequires:  ant-apache-resolver
+BuildRequires:	xml-commons-resolver
+BuildRequires:	maven2
+BuildRequires:	maven2-plugin-resources
+BuildRequires:	maven2-plugin-compiler
+BuildRequires:	maven-surefire-plugin
+BuildRequires:	maven2-plugin-jar
+BuildRequires:	maven2-plugin-install
+BuildRequires:	maven2-plugin-site
+BuildRequires:	maven2-plugin-assembly
+BuildRequires:	maven2-plugin-javadoc
+BuildRequires:	ant-apache-resolver
 %else
-BuildRequires:  ant
-BuildRequires:  junit
+BuildRequires:	ant
+BuildRequires:	junit
 %endif
-%if %{with gcj_support}
-BuildRequires:          java-gcj-compat-devel
-%else
-BuildArch:      noarch
-%endif
+Requires:	/bin/sh
+Requires:	/bin/stty
 
 %description
 JLine is a java library for reading and editing user input in console
@@ -73,18 +73,18 @@ masking, customizable keybindings, and pass-through handlers to use to
 chain to other console applications.
 
 %package        demo
-Summary:        Demos for %{name}
-Group:          Development/Java
+Summary:	Demos for %{name}
+Group:		Development/Java
 
 %description    demo
 Demonstrations and samples for %{name}.
 
-# FIXME: the maven ant:ant generated build.xml file does not contain 
+# FIXME:	the maven ant:ant generated build.xml file does not contain 
 #        a javadoc task
 %if %{with maven}
 %package        javadoc
-Summary:        Javadoc for %{name}
-Group:          Development/Java
+Summary:	Javadoc for %{name}
+Group:		Development/Java
 
 %description    javadoc
 Javadoc for %{name}.
@@ -112,15 +112,17 @@ export MAVEN_REPO_LOCAL=$(pwd)/.m2/repository
 mkdir -p $MAVEN_REPO_LOCAL
 
 mvn-jpp \
-        -e \
-                -Dmaven.repo.local=$MAVEN_REPO_LOCAL \
-                -Dmaven.test.failure.ignore=true \
-        install javadoc:javadoc
+	-e \
+	-Dmaven.repo.local=$MAVEN_REPO_LOCAL \
+	-Dmaven.test.failure.ignore=true \
+	install javadoc:javadoc
 %else
 mkdir -p $(pwd)/.m2/repository
 build-jar-repository $(pwd)/.m2/repository junit
 export CLASSPATH=$(pwd)/target/classes:$(pwd)/target/test-classes
-%{ant} -Dbuild.sysclasspath="only" -Duser.home=$(pwd) 
+%ant \
+	-Dbuild.sysclasspath="only" \
+	-Duser.home=$(pwd) 
 %endif
 
 %install
@@ -146,10 +148,10 @@ ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name}
 %{_bindir}/aot-compile-rpm
 
 %post
-%{update_gcjdb}
+%update_gcjdb
 
 %postun
-%{clean_gcjdb}
+%clean_gcjdb
 %endif
 
 %files
@@ -168,77 +170,10 @@ ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name}
 %doc %{_javadocdir}/*
 %endif
 
-#FIXME: add javadoc support to generated build.xml
+#FIXME:	add javadoc support to generated build.xml
 
 %if %{with gcj_support}
 %dir %attr(-,root,root) %{_libdir}/gcj/%{name}
 %attr(-,root,root) %{_libdir}/gcj/%{name}/jline-%{version}.jar.*
 %endif
 
-
-%changelog
-* Wed May 11 2011 Per Øyvind Karlsen <peroyvind@mandriva.org> 1.0-1
-+ Revision: 673389
-- update to 1.0 and do some heavy cleaning
-
-  + Thierry Vignaud <tv@mandriva.org>
-    - rebuild
-
-* Tue Feb 26 2008 Alexander Kurtakov <akurtakov@mandriva.org> 0:0.9.94-0.0.1mdv2008.1
-+ Revision: 175316
-- new version and build with maven
-
-  + Olivier Blin <oblin@mandriva.com>
-    - restore BuildRoot
-
-  + Thierry Vignaud <tv@mandriva.org>
-    - kill re-definition of %%buildroot on Pixel's request
-
-* Sun Dec 16 2007 Anssi Hannula <anssi@mandriva.org> 0:0.9.93-0.0.2mdv2008.1
-+ Revision: 120949
-- buildrequire java-rpmbuild, i.e. build with icedtea on x86(_64)
-
-* Wed Nov 14 2007 David Walluck <walluck@mandriva.org> 0:0.9.93-0.0.1mdv2008.1
-+ Revision: 108566
-- 0.9.93 (upstream versioning, not jpackage)
-
-* Sat Sep 15 2007 Anssi Hannula <anssi@mandriva.org> 0:0.9.9.1-1.0.2mdv2008.0
-+ Revision: 87438
-- rebuild to filter out autorequires of GCJ AOT objects
-- remove unnecessary Requires(post) on java-gcj-compat
-
-* Sat Aug 04 2007 David Walluck <walluck@mandriva.org> 0:0.9.9.1-1.0.1mdv2008.0
-+ Revision: 58826
-- 0.9.9.1
-
-* Wed Jul 04 2007 David Walluck <walluck@mandriva.org> 0:0.9.9-1.1.1mdv2008.0
-+ Revision: 47871
-- Import jline
-
-
-
-* Tue Mar 06 2007 Matt Wringe <mwringe@redhat.com> - 0:0.9.9-1jpp.1
-- Add option to build with ant.
-- Fix various rpmlint issues
-- Specify proper license
-
-* Thu May 04 2006 Alexander Kurtakov <akurtkov at gmail.com> - 0:0.9.9-1jpp
-- Upgrade to 0.9.9
-
-* Thu May 04 2006 Ralph Apel <r.apel at r-apel.de> - 0:0.9.5-1jpp
-- Upgrade to 0.9.5
-- First JPP-1.7 release
-
-* Mon Apr 25 2005 Fernando Nasser <fnasser@redhat.com> - 0:0.9.1-1jpp
-- Upgrade to 0.9.1
-- Disable attempt to include external jars
-
-* Mon Apr 25 2005 Fernando Nasser <fnasser@redhat.com> - 0:0.8.1-3jpp
-- Changes to use locally installed DTDs
-- Do not try and access sun site for linking javadoc
-
-* Sun Aug 23 2004 Randy Watler <rwatler at finali.com> - 0:0.8.1-2jpp
-- Rebuild with ant-1.6.2
-
-* Mon Jan 26 2004 David Walluck <david@anti-microsoft.org> 0:0.8.1-1jpp
-- release

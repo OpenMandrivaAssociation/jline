@@ -4,7 +4,7 @@
 Summary:	Java library for reading and editing user input in console applications
 Name:		jline
 Version:	1.0
-Release:	4
+Release:	5
 License:	BSD
 Url:		http://jline.sf.net/
 Group:		Development/Java

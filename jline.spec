@@ -1,21 +1,16 @@
-%bcond_with	gcj_support
 %bcond_with	maven
 
 Summary:	Java library for reading and editing user input in console applications
 Name:		jline
 Version:	1.0
-Release:	6
+Release:	7
 License:	BSD
 Url:		http://jline.sf.net/
 Group:		Development/Java
 Source0:	http://superb-east.dl.sourceforge.net/sourceforge/jline/jline-%{version}.zip
 Source1:	CatalogManager.properties
 Source2:	jline-build.xml
-%if !%{with gcj_support}
 BuildArch:	noarch
-%else
-BuildRequires:	java-gcj-compat-devel
-%endif
 BuildRequires:	java-rpmbuild >= 0:1.7
 %if %{with maven}
 BuildRequires:	xml-commons-resolver
@@ -101,6 +96,7 @@ export CLASSPATH=$(pwd)/target/classes:$(pwd)/target/test-classes
 for jar in $(find -type f -name "*.jar"); do
 	install -m644 $jar -D %{buildroot}%{_javadir}/%{name}-%{version}.jar
 	jar -i %{buildroot}%{_javadir}/%{name}-%{version}.jar
+        chmod 644 %{buildroot}%{_javadir}/%{name}-%{version}.jar
 done
 %create_jar_links
 
@@ -115,35 +111,12 @@ done
 ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name} 
 %endif
 
-%if %{with gcj_support}
-%{_bindir}/aot-compile-rpm
-
-%post
-%update_gcjdb
-
-%postun
-%clean_gcjdb
-%endif
-
 %files
 %doc LICENSE.txt
 %{_javadir}/%{name}.jar
 %{_javadir}/%{name}-%{version}.jar
 %doc LICENSE.txt
 
-%if %{with maven}
-%if %{with gcj_support}
-%dir %attr(-,root,root) %{_libdir}/gcj/%{name}
-%attr(-,root,root) %{_libdir}/gcj/%{name}/jline-%{version}.jar.*
-%endif
-
 %files javadoc
 %doc %{_javadocdir}/*
-%endif
-
-#FIXME:	add javadoc support to generated build.xml
-
-%if %{with gcj_support}
-%dir %attr(-,root,root) %{_libdir}/gcj/%{name}
-%attr(-,root,root) %{_libdir}/gcj/%{name}/jline-%{version}.jar.*
 %endif

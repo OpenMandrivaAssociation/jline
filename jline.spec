@@ -1,146 +1,98 @@
 %{?_javapackages_macros:%_javapackages_macros}
-# Copyright (c) 2000-2005, JPackage Project
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the
-#    distribution.
-# 3. Neither the name of the JPackage Project nor the names of its
-#    contributors may be used to endorse or promote products derived
-#    from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
+Name:             jline
+Version:          2.10
+Release:          14.1
+Summary:          JLine is a Java library for handling console input
+Group:		Development/Java
+License:          BSD and ASL 2.0
+URL:              https://github.com/jline/jline2
 
-Name:           jline
-Version:        1.0
-Release:        7.1%{?dist}
-Summary:        Java library for reading and editing user input in console applications
-License:        BSD
-URL:            http://jline.sourceforge.net/
+# git clone git://github.com/jline/jline2.git
+# cd jline2/ && git archive --format=tar --prefix=jline-2.10/ jline-2.10 | xz > jline-2.10.tar.xz
+Source0:          jline-%{version}.tar.xz
 
-Source0:        http://download.sourceforge.net/sourceforge/jline/jline-%{version}.zip
-Source1:        CatalogManager.properties
-Patch1:         %{name}-0.9.94-crosslink.patch
+BuildArch:        noarch
 
-Requires:      bash
-# for /bin/stty
-Requires:      coreutils
-Requires:      jpackage-utils
+BuildRequires:    jpackage-utils
+BuildRequires:    java-devel
+BuildRequires:    maven-local
+BuildRequires:    maven-compiler-plugin
+BuildRequires:    maven-jar-plugin
+BuildRequires:    maven-surefire-plugin
+BuildRequires:    maven-install-plugin
+BuildRequires:    junit
+BuildRequires:    jansi
+BuildRequires:    fusesource-pom
 
-BuildRequires: jpackage-utils
-BuildRequires: maven-local
-BuildRequires: maven-assembly-plugin
-BuildRequires: maven-compiler-plugin
-BuildRequires: maven-install-plugin
-BuildRequires: maven-jar-plugin
-BuildRequires: maven-javadoc-plugin
-BuildRequires: maven-resources-plugin
-BuildRequires: maven-site-plugin
-BuildRequires: maven-surefire-plugin
-BuildRequires: maven-surefire-provider-junit
-BuildRequires: java-javadoc
-
-BuildArch:     noarch
+Obsoletes: jline2 < %{version}-%{release}
+Provides: jline2 = %{version}-%{release}
 
 %description
-JLine is a java library for reading and editing user input in console
-applications. It features tab-completion, command history, password
-masking, configurable key-bindings, and pass-through handlers to use to
-chain to other console applications.
+JLine is a Java library for handling console input. It is similar
+in functionality to BSD editline and GNU readline. People familiar
+with the readline/editline capabilities for modern shells (such as
+bash and tcsh) will find most of the command editing features of
+JLine to be familiar. 
 
-%package        demo
-Summary:        Demos for %{name}
+%package javadoc
+Summary:          Javadocs for %{name}
+Obsoletes: jline2-javadoc < %{version}-%{release}
+Provides: jline2-javadoc = %{version}-%{release}
 
-Requires:       %{name} = %{version}-%{release}
-
-%description    demo
-Demonstrations and samples for %{name}.
-
-%package        javadoc
-Summary:        Javadoc for %{name}
-
-Requires:       java-javadoc
-
-%description    javadoc
-Javadoc for %{name}.
+%description javadoc
+This package contains the API documentation for %{name}.
 
 %prep
-%setup -q
-%patch1 -p1
+%setup -q -n jline-%{version}
 
-# Make sure upstream hasn't sneaked in any jars we don't know about
-find -name '*.class' -exec rm -f '{}' \;
-find -name '*.jar' -exec rm -f '{}' \;
+# Remove maven-shade-plugin usage
+%pom_remove_plugin "org.apache.maven.plugins:maven-shade-plugin"
+# Remove animal sniffer plugin in order to reduce deps
+%pom_remove_plugin "org.codehaus.mojo:animal-sniffer-maven-plugin"
 
-# Remove pre-built Windows-only binary artifacts
-rm src/src/main/resources/jline/jline*.dll
+# Remove unavailable and unneeded deps
+%pom_xpath_remove "pom:build/pom:extensions"
+%pom_xpath_remove "pom:build/pom:pluginManagement/pom:plugins/pom:plugin[pom:artifactId = 'maven-site-plugin']"
 
-# Use locally installed DTDs
-mkdir build
-cp -p %{SOURCE1} build/
+# Do not import non-existing internal package
+%pom_xpath_remove "pom:build/pom:plugins/pom:plugin[pom:artifactId = 'maven-bundle-plugin']/pom:executions/pom:execution/pom:configuration/pom:instructions/pom:Import-Package"
+%pom_xpath_inject "pom:build/pom:plugins/pom:plugin[pom:artifactId = 'maven-bundle-plugin']/pom:executions/pom:execution/pom:configuration/pom:instructions" "<Import-Package>javax.swing;resolution:=optional,!org.fusesource.jansi.internal</Import-Package>"
+
+# Let maven bundle plugin figure out the exports.
+%pom_xpath_remove "pom:build/pom:plugins/pom:plugin[pom:artifactId = 'maven-bundle-plugin']/pom:executions/pom:execution/pom:configuration/pom:instructions/pom:Export-Package"
 
 %build
-# Use locally installed DTDs
-export CLASSPATH=%{_builddir}/%{name}-%{version}/build
-
-cd src/
-
-mvn-rpmbuild install javadoc:javadoc
+%mvn_build
 
 %install
-# jars
-install -pD -T -m 644 src/target/%{name}-%{version}.jar \
-  %{buildroot}%{_javadir}/%{name}.jar
+%mvn_install
 
-# javadoc
-install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}
-cp -pr src/target/site/apidocs/* %{buildroot}%{_javadocdir}/%{name}
+%files -f .mfiles
 
-# demo
-install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/%{name}
-cp -pr examples %{buildroot}%{_datadir}/%{name}
-
-# pom
-install -pD -T -m 644 src/pom.xml %{buildroot}%{_mavenpomdir}/JPP-%{name}.pom
-%add_maven_depmap JPP-%{name}.pom %{name}.jar
-
-%pre javadoc
-# workaround for rpm bug, can be removed in F-17
-[ $1 -gt 1 ] && [ -L %{_javadocdir}/%{name} ] && \
-rm -rf $(readlink -f %{_javadocdir}/%{name}) %{_javadocdir}/%{name} || :
-
-%files
-%{_javadir}/%{name}.jar
-%{_mavendepmapfragdir}/*
-%{_mavenpomdir}/*
-%doc LICENSE.txt src/src/main/resources/jline/keybindings.properties
-
-%files demo
-%{_datadir}/%{name}
-
-%files javadoc
-%doc LICENSE.txt
-%{_javadocdir}/*
+%files javadoc -f .mfiles-javadoc
 
 %changelog
+* Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.10-14
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Mon May 26 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.10-13
+- Migrate BuildRequires from junit4 to junit
+
+* Mon May 26 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.10-12
+- Remove BuildRequires on maven-surefire-provider-junit4
+
+* Tue Mar 11 2014 Michael Simacek <msimacek@redhat.com> - 2.10-11
+- Drop manual requires
+
+* Tue Mar 04 2014 Stanislav Ochotnicky <sochotnicky@redhat.com> - 2.10-10
+- Use Requires: java-headless rebuild (#1067528)
+
+* Tue Oct 29 2013 Severin Gehwolf <sgehwolf@redhat.com> - 2.10-9
+- Package jline 2.x as jline. Resolves RHBZ#1022915.
+- Part of a large effort to make jline1 a compat package rather than jline2.
+  See RHBZ#1022897.
+- Switch to xmvn.
+
 * Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
@@ -234,3 +186,4 @@ rm -rf $(readlink -f %{_javadocdir}/%{name}) %{_javadocdir}/%{name} || :
 
 * Mon Jan 26 2004 David Walluck <david@anti-microsoft.org> 0:0.8.1-1jpp
 - release
+

@@ -1,7 +1,7 @@
 %{?_javapackages_macros:%_javapackages_macros}
 Name:             jline
 Version:          2.10
-Release:          14.3
+Release:          14.4
 Summary:          JLine is a Java library for handling console input
 Group:		Development/Java
 License:          BSD and ASL 2.0

@@ -1,4 +1,2 @@
-removed_sources:
-  jline-1.0.zip: b3ca86851faf7f2ef999c139e752107524e759ad
 sources:
-  jline-2.10.tar.xz: 8e17c8d33ad066a771faeb071c53cf96cce71bed
+  jline-3.30.4.tar.gz: ab2094d66828aa45e52f25cc328c4dd59129890e
